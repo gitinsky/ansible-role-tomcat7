@@ -1,0 +1,42 @@
+---
+- name: download Tomcat 7
+  command: bash -c "cd /root && wget http://apache-mirror.rbc.ru/pub/apache/tomcat/tomcat-7/v7.0.57/bin/apache-tomcat-7.0.57.tar.gz" creates=/root/apache-tomcat-7.0.57.tar.gz
+
+- name: unpack Tomcat 7
+  command: bash -c "cd /opt && tar xzf /root/apache-tomcat-7.0.57.tar.gz" creates=/opt/apache-tomcat-7.0.57
+
+- name: make a link to apache-tomcat
+  file: state=link src=/opt/apache-tomcat-7.0.57 dest=/opt/apache-tomcat7
+
+- name: make a link to tomcat
+  file: state=link src=/opt/apache-tomcat7 dest=/opt/tomcat7
+
+- name: add tomcat7 user
+  user: name=tomcat7 shell=/sbin/nologin
+
+- name: make /opt/tomcat7/logs
+  file: state=directory name=/opt/tomcat7/logs owner=tomcat7 group=tomcat7 mode=0755
+
+- name: make /opt/tomcat7/temp
+  file: state=directory name=/opt/tomcat7/temp owner=tomcat7 group=tomcat7 mode=0755
+
+- name: make /opt/tomcat7/work
+  file: state=directory name=/opt/tomcat7/work owner=tomcat7 group=tomcat7 mode=0755
+
+- name: make /opt/tomcat7/webapps
+  file: state=directory name=/opt/tomcat7/webapps owner=tomcat7 group=tomcat7 mode=0755
+
+- name: make existing webapps readable to tomcat7 user
+  command: bash -c "chown -R tomcat7 /opt/tomcat7/webapps"
+
+- name: make config files readable to tomcat7 user
+  command: bash -c "chown -R :tomcat7 /opt/tomcat7/conf && chmod 640 /opt/tomcat7/conf/*"
+
+- name: make /opt/tomcat7/conf/Catalina
+  file: state=directory name=/opt/tomcat7/conf/Catalina owner=tomcat7 group=tomcat7 mode=0755
+
+- name: make /opt/tomcat7/conf/Catalina/localhost
+  file: state=directory name=/opt/tomcat7/conf/Catalina/localhost owner=tomcat7 group=tomcat7 mode=0755
+
+- name: put server.xml
+  template: src=server.xml dest=/opt/tomcat7/conf/server.xml owner=root group=tomcat7 mode=0640
